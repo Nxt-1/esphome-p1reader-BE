@@ -14,7 +14,7 @@ esp8266:
   restore_from_flash: true
 
 external_components:
-  - source: ../esphome-components
+  - source: ../components
 
 wifi:
   ssid: !secret wifi_ssid
