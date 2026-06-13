@@ -25,7 +25,7 @@ wifi:
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "esp-p1reader"
-    password: !secret fallback_password
+    password: !secret wifi_hotspot_password
 
 captive_portal:
 
@@ -38,7 +38,7 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: !secret encryption_key
+    key: !secret api_encryption_key
     
 ota:
   password: !secret ota_password
@@ -55,10 +55,10 @@ p1reader:
   - id: p1reader_esp
     uart_id: uart_bus
 #  Size of the internal working buffer (default 60)
-#    buffer_size: 3072
+    buffer_size: 3072
 #    protocol: hdlc
 #  OR (the default if left unset)
-#    protocol: ascii
+    protocol: ascii
 
 sensor:
   - platform: p1reader
