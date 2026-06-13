@@ -1,5 +1,5 @@
 substitutions:
-  device_name: esp-p1reader
+  device_name: p1-dongle
 
 esphome:
   name: ${device_name}
@@ -24,7 +24,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "esp-p1reader"
+    ssid: "p1-dongle"
     password: !secret wifi_hotspot_password
 
 captive_portal:
