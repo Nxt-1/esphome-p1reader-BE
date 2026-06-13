@@ -275,8 +275,6 @@ namespace esphome {
               cumulativeActiveImportTariff2 = 0.0;
               cumulativeActiveExportTariff1 = 0.0;
               cumulativeActiveExportTariff2 = 0.0;
-              hasCumulativeActiveImportTariffs = false;
-              hasCumulativeActiveExportTariffs = false;
 
               crc = 0x0000;
               telegramComplete = false;
