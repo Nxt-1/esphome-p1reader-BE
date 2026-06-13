@@ -1,29 +1,14 @@
 # esphome-p1reader
-ESPHome custom component for reading P1 data from electricity meters. Designed for Swedish meters that implement the specification defined in the [Swedish Energy Industry Recommendation For Customer Interfaces](https://www.energiforetagen.se/forlag/elnat/branschrekommendation-for-lokalt-kundgranssnitt-for-elmatare/) version 1.3 and above.
+This is a fork from [psvanstrom's project](https://github.com/psvanstrom/esphome-p1reader) with some small customisations to suit it to my needs, focused around compatibility with Belgian/Fluvius meters.
 
 ## ESPHome version
-The current version in main is tested with ESPHome version `2024.12.4` and `2025.2.0`. Make sure your ESPHome version is up to date if you experience compile problems.
-(NOTE: This component is now an External Component as the Custom Components API have been removed from ESPHome)
-
-## Verified meter hardware / supplier
-* [Sagemcom T211](https://www.ellevio.se/globalassets/content/el/elmatare-produktblad-b2c/ellevio_produktblad_fas3_t211_web2_.pdf) / Ellevio & Skånska Energi ([Info, port activation, etc.](https://www.ellevio.se/privat/om-din-el/elen-i-hemmet/forsta-din-elmatare/))
-* [Landis+Gyr E360](https://eu.landisgyr.com/blog-se/e360-en-smart-matare-som-optimerarden-totala-agandekostnaden)
-* [Itron A300](https://boraselnat.se/elnat/elmatarbyte-2020-2021/sa-har-fungerar-din-nya-elmatare/) / Borås Elnät
-* [S34U18 (Sanxing SX631)](https://www.vattenfalleldistribution.se/globalassets/vattenfalleldistribution/kund-i-elnatet/matarbyte/nya-elmataren/vattenfall-eldistribution_anvandarmanual-elmatare.pdf) / Vattenfall
-* [KAIFA MA304H4E](https://reko.nackaenergi.se/elmatarbyte/) / Nacka Energi
-* [KAIFA CL109](https://www.oresundskraft.se/dags-for-matarbyte/) / Öresundskraft
-* [Aidon](https://www.tekniskaverken.se/kundservice/dinamatare/snart-far-du-nya-matare/) / Tekniska Verken
-* [Kamstrup Omnia](https://www.goteborgenergi.se/kundservice/elmatarbyte/sa-fungerar-din-elmatare) / Göteborgs Energi
-
-*Note:* There's a bug in older E360 firmware, causing it to stop sending out data after a while. Check this comment for more info: https://github.com/psvanstrom/esphome-p1reader/issues/4#issuecomment-810794020
-  
-*Warning:*  Do not confuse KAIFA MA304H4**E** with MA304H4**D** as the latter uses M-Bus instead of P1. Apart from being incompatible protocols, M-Bus pin 1 exerts 27V instead of 5V and will fry your P1 equipment.
+The current version in main is tested with ESPHome version `2026.6.1` and `2026.6.3`.
 
 ## Hardware
-I have used an ESP-12 based NodeMCU for my circuit, another alternative is the cheaper Wemos D1 mini but most ESP-based controllers would probably work. The P1 port on the meter provides 5V up to 250mA which makes it possible to power the circuit directly from the P1 port.
+I have used an ESP-12 based NodeMCU for my circuit.
 
 ### Parts
-- 1 NodeMCU, Wemos D1 mini or equivalent ESP-12 / ESP-32 microcontroller
+- 1 NodeMCU
 - 1 BC547 / 2N3904 NPN transistor
 - 1 4.7kOhm Resistor
 - 1 10kOhm Resistor
@@ -35,107 +20,6 @@ The circuit is very simple, basically the 5V TX output on the P1 connector is co
 
 #### Wiring NodeMCU ESP-12
 ![Wiring Diagram](images/wiring.png)
-
-#### Wiring Wemos D1 mini
-![image](https://user-images.githubusercontent.com/5547521/132756141-53941ed7-64f6-4c83-b0b0-6fc7c9634752.png)
-
-#### Wiring barebone ESP-12 with added voltage regulators and capacitors.
-The schematics show a 2SC1815 NPN transistor being used (because that's what I had laying around), will work just fine with either one of the transistors listed under the parts section. 
-![Wiring Diagram](images/p1reader-barebone-ESP-12F.png)
-
-### PCB and enclosures
-#### Naesstrom
-[Naesstrom](https://github.com/Naesstrom) has made a nice PCB layout for the P1 reader using a Wemos D1 mini as the controller along with a 3D printable enclosure. 
-
-Check out the PCB here: https://oshwlab.com/Naesstrom/esphome-p1reader and the enclosure here: https://www.thingiverse.com/thing:4961372.
-
-<p float="left">
-    <img src="https://user-images.githubusercontent.com/5547521/128576100-648cd2b7-d728-4d8b-90be-46f7498d8136.png" height="300" />
-    <img src="https://user-images.githubusercontent.com/5547521/132759466-f92bf190-ebaa-401d-bb54-330df5ba3ae0.png" height="300" /> 
-</p>
-
-#### EHjortberg
-[EHjortberg](https://github.com/ehjortberg) has made an equally nice PCB layout based on an ESP07 module along with a 3D printable enclosure. Check it out here: https://github.com/ehjortberg/kicad-p1-port-thingie.
-
-<p float="left">
-  <img src="https://github.com/ehjortberg/kicad-p1-port-thingie/raw/master/images/p1-port-thingie-photo.jpg" width="400">
-</p>
-
-## Alternate hardware
-
-Since most of the actual specification is, for all practical purposes, identical across Europe/EU (with the exception of Norway) we can use many kinds of different hardware that supports ESPHome and can interface with the P1 port. Both other custom made solutions and some commercial options. The key to using them is to combine them with the code here that handles the Swedish selection of data values sent from the smart meter. The DSMR module in ESPHome follows the Dutch specification for values to be used.
-
-(Finland and Denmark seems to have the exact same configuration as Sweden)
-
-### Running on ESP32
-
-The ESP32 requires an external power supply since it cannot be powered by the low amperage available from the P1-port itself. Using the hardware UART on GPIO3 is required.
-
-Use a pull-up resistor (1k) from RXD to 3V3.
-
-```
-uart:
-    id: uart_bus
-    rx_pin:
-      number: GPIO3
-      inverted: true
-    baud_rate: 115200
-```
-
-![image](https://user-images.githubusercontent.com/36197/199937760-c6dce355-1e69-4b78-ae04-e2f6c9b2241e.png)
-
-Image credit: https://github.com/Josverl/micropython-p1meter
-
-### Running on SmartyReader P1
-
-Weigu has designed [SmartyReader P1](http://weigu.lu/microcontroller/smartyReader_P1/index.html) that also can be running with this code and configuration with a few small adaptions.
-
-This hardware runs on ESP8266 Wemos D1 mini pro but with less components.
-
-#### Basic steps to run this code on SmartyReader P1:
-
-1. Set the board to Wemos D1 mini pro
-```
-board: d1_mini_pro
-```
-
-2. Adjust the UART section to invert the RX pin (removed TX pin config since it is not used).
-```
-uart:
-    id: uart_bus
-    rx_pin:
-      number: 3
-      inverted: true
-    baud_rate: 115200
-```
-
-~~Note that the inverted flag is only supported in ESPHome beta as of now.~~
-~~Monitor [this PR](https://github.com/esphome/esphome/pull/1727) to follow if it is released to general version.~~
-_inverted flag feature has been added in ESPHome 2021.12.0 released on 11th December 2021._
-
-### Running on Slimmelezer(+)
-
-Marcel Zuidwijk has designed [Slimmelezer+](https://www.zuidwijk.com/product/slimmelezer-plus/) that also can be used with this code and combined with the standard configuration for the Slimmelezer+. (Also the non + version works fine, the software is compatible).
-
-It is designed as a custom board with a P1 interface that is software equivalent with the Wemos D1 Mini.
-
-#### Basic steps to run this code on the Slimmelezer+:
-
-1. Set the board to Wemos D1 mini
-```
-board: d1_mini
-```
-
-2. Adjust the UART section to set the rx_pin used by the Slimmelezer
-```
-uart:
-    id: uart_bus
-    baud_rate: 115200
-    rx_pin: D7
-    rx_buffer_size: 3072    
-```
-
-[Sample configuration](./samples/slimmelezer.yaml), uses !secret for all site specific configuration, see below.
 
 ## Installation
 
@@ -152,8 +36,6 @@ ota_password: <The OTA password>
 Check [the Native API Component chapter of the ESPHome documentation](https://esphome.io/components/api.html#configuration-variables) for more info on the encryption key, this page also let you easily generate an encryption key.
 
 Make sure to place the `secrets.yaml` file in the root path of the cloned project. The `fallback_password` and `ota_password` fields can be set to any password before doing the initial upload of the firmware.
-
-If your electricity supplier is using an Aidon 6442SE or Aidon 653X meter, they might still be using the HDLC protocol rather than the ASCII format for the meter data on the P1 port. Use the [Sample configuration for HDLC](./samples/p1reader_hdlc.yaml) to handle this setup. It configures a different input parser to handle the HDLC protocol.
 
 Prepare the microcontroller with ESPHome before you connect it to the circuit:
 - Install the `esphome` [command line tool](https://esphome.io/guides/getting_started_command_line.html)
