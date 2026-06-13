@@ -7,6 +7,16 @@ namespace esphome {
             double cumulativeActiveImport;
             double cumulativeActiveExport;
 
+            double cumulativeActiveImportTariff1;
+            double cumulativeActiveImportTariff2;
+            double cumulativeActiveExportTariff1;
+            double cumulativeActiveExportTariff2;
+
+            bool hasCumulativeActiveImportTariff1;
+            bool hasCumulativeActiveImportTariff2;
+            bool hasCumulativeActiveExportTariff1;
+            bool hasCumulativeActiveExportTariff2;
+
             double cumulativeReactiveImport;
             double cumulativeReactiveExport;
 
@@ -57,26 +67,25 @@ namespace esphome {
               // Belgian/Fluvius cumulative active import registers.
               if (strcmp(obisCode, "1.8.1") == 0) {
                 cumulativeActiveImportTariff1 = obisValue;
-                hasCumulativeActiveImportTariffs = true;
+                hasCumulativeActiveImportTariff1 = true;
                 return;
               }
 
               if (strcmp(obisCode, "1.8.2") == 0) {
                 cumulativeActiveImportTariff2 = obisValue;
-                hasCumulativeActiveImportTariffs = true;
+                hasCumulativeActiveImportTariff2 = true;
                 return;
               }
 
-              // Belgian/Fluvius cumulative active export registers.
               if (strcmp(obisCode, "2.8.1") == 0) {
                 cumulativeActiveExportTariff1 = obisValue;
-                hasCumulativeActiveExportTariffs = true;
+                hasCumulativeActiveExportTariff1 = true;
                 return;
               }
 
               if (strcmp(obisCode, "2.8.2") == 0) {
                 cumulativeActiveExportTariff2 = obisValue;
-                hasCumulativeActiveExportTariffs = true;
+                hasCumulativeActiveExportTariff2 = true;
                 return;
               }
 
@@ -258,6 +267,10 @@ namespace esphome {
             }
 
             void initNewTelegram() {
+              hasCumulativeActiveImportTariff1 = false;
+              hasCumulativeActiveImportTariff2 = false;
+              hasCumulativeActiveExportTariff1 = false;
+              hasCumulativeActiveExportTariff2 = false;
               cumulativeActiveImportTariff1 = 0.0;
               cumulativeActiveImportTariff2 = 0.0;
               cumulativeActiveExportTariff1 = 0.0;
@@ -284,23 +297,20 @@ namespace esphome {
             }
 
             void checkCrc(uint16_t crcFromMessage) {
-              // Prefer Belgian tariff registers when they were present.
-              // Otherwise, retain values parsed from 1.8.0 and 2.8.0.
-              if (hasCumulativeActiveImportTariffs) {
-                cumulativeActiveImport =
-                        cumulativeActiveImportTariff1 +
-                                cumulativeActiveImportTariff2;
+              crcOk = crc == crcFromMessage;
+
+              if (crcOk) {
+                if (hasCumulativeActiveImportTariff1 && hasCumulativeActiveImportTariff2) {
+                  cumulativeActiveImport = cumulativeActiveImportTariff1 + cumulativeActiveImportTariff2;
+                }
+
+                if (hasCumulativeActiveExportTariff1 && hasCumulativeActiveExportTariff2) {
+                  cumulativeActiveExport = cumulativeActiveExportTariff1 + cumulativeActiveExportTariff2;
+                }
               }
 
-              if (hasCumulativeActiveExportTariffs) {
-                cumulativeActiveExport =
-                        cumulativeActiveExportTariff1 +
-                                cumulativeActiveExportTariff2;
-              }
+              telegramComplete = true;
             }
-
-            telegramComplete = true;
-        }
-    };
-}
+        };
+    }
 }
